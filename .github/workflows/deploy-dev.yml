@@ -38,6 +38,7 @@ jobs:
 
           echo "SHA=$SHA" >> "$GITHUB_OUTPUT"
           echo "TAG=dev-$SHA" >> "$GITHUB_OUTPUT"
+          echo "OWNER=${GITHUB_REPOSITORY_OWNER}" >> "$GITHUB_OUTPUT"
 
       - name: Build frontend
         run: |
