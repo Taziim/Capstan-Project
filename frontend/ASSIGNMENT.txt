@@ -1,0 +1,141 @@
+DEVOPS PRACTICAL ASSIGNMENT — CI/CD, CONTAINERIZATION & GITOPS DELIVERY
+
+Total Marks: 100
+Reference Application: Support Chat platform - simple-vite-front (React/Vite frontend) and simple-express-backend (Express/Socket.IO backend)
+
+================================================================================
+SCENARIO
+================================================================================
+
+You have joined the platform engineering team responsible for shipping the
+Support Chat application. The application already exists as working source
+code, but it has no delivery pipeline, no container packaging, and no
+deployment story. Product wants a repeatable, auditable path for code to move
+from a developer's machine to a production environment, across three
+environments - Development, Staging, and Production - with the appropriate
+level of control at each stage.
+
+You are being evaluated as if this were real production work assigned to a
+DevOps engineer, not a classroom exercise. Ambiguity is intentional and
+mirrors real engagements: where the brief does not specify a detail, you are
+expected to make a defensible engineering decision and be able to justify it
+during review. Marks are awarded for sound reasoning and working systems, not
+for guessing a "correct" tool.
+
+Fork or import the frontend repository into a GitHub repository you control,
+and set up the backend repository alongside it under your own account. You
+will be assessed on the repository(ies) you submit.
+
+================================================================================
+WHAT YOU MUST DELIVER
+================================================================================
+
+1. SOURCE CONTROL & BRANCHING STRATEGY
+
+Set up a Git branching model with three long-lived branches - dev, stage, and
+prod - that reflects how the three environments relate to one another and to
+feature work. The history, merge strategy, and any protections you configure
+on these branches should make the intended promotion path (where code is
+written, where it is validated, and where it is finally released) obvious to
+another engineer inspecting the repository without further explanation.
+
+2. CONTINUOUS INTEGRATION & CONTINUOUS DELIVERY
+
+Implement automated pipelines against this branching model with the following
+constraint, which is non-negotiable and will be checked directly:
+
+  - Changes flowing into the dev and stage environments must have their
+    deployment step triggered manually by a human decision - code reaching
+    these branches should not automatically land on the running environment.
+
+  - Changes flowing into prod must be deployed automatically as a
+    consequence of a pull request being opened against the prod branch - no
+    separate manual action should be required to get a validated change live
+    in production.
+
+You decide what a pipeline should verify before anything is deployed, and how
+failures should be surfaced.
+
+3. CONTAINERIZATION & VERSIONING
+
+Produce two distinct Docker images for the application stack - one intended
+for the development environment and one intended for production - reflecting
+that these environments may reasonably differ (build mode, optimization,
+configuration, exposed behavior, etc.). Each image you produce and push must
+carry a version identity that lets a team member unambiguously determine,
+months later, exactly which source commit and environment a running
+container corresponds to. A tagging scheme that only ever produces "latest"
+will not satisfy this requirement.
+
+4. KUBERNETES DELIVERY
+
+Run the containerized application on Kubernetes using workload and
+networking resources only - a Deployment and a Service per environment or
+component as appropriate. Exposure via an Ingress resource is explicitly out
+of scope for this assignment; do not implement one. Your manifests should
+reflect the same dev/stage/prod separation established earlier in the
+pipeline.
+
+5. GITOPS DELIVERY VIA ARGO CD
+
+Bring the running state of your Kubernetes workloads under Argo CD's
+management, such that the desired state of each environment is declared in
+Git and Argo CD is the system responsible for reconciling the cluster to
+match it. Be prepared to demonstrate a change propagating through Git into a
+running environment under Argo CD's supervision, consistent with the
+manual/automatic trigger rules defined in section 2.
+
+================================================================================
+MARK DISTRIBUTION (100 MARKS, REQUIRED WORK ONLY)
+================================================================================
+
+  #  Deliverable                                                       Marks
+  1  Repository structure & branching strategy (dev / stage / prod)      10
+  2  CI pipeline - build/validation on each branch                      15
+  3  CD - dev deployment, manually triggered                            10
+  4  CD - stage deployment, manually triggered                          10
+  5  CD - prod deployment, auto-triggered on pull request                15
+  6  Docker images (dev + prod) with defensible version control scheme  15
+  7  Kubernetes Deployment manifests (per environment)                  10
+  8  Kubernetes Service manifests (per environment)                      5
+  9  Argo CD setup managing the deployed workloads                      10
+     ------------------------------------------------------------------------
+     TOTAL                                                              100
+
+================================================================================
+OPTIONAL / BONUS WORK (NOT COUNTED TOWARD THE 100 MARKS)
+================================================================================
+
+Teams operating this application in the real world need to know when it
+breaks, not discover it from a user complaint. As an optional extension, you
+may add an observability layer to your delivery - at minimum, some mechanism
+for surfacing error conditions from the running application or platform to
+the people responsible for it. Engineers who take this on are encouraged to
+look into how a Telegram channel can be used as a low-friction destination
+for this kind of alert. This section carries no fixed mark value; it will be
+considered only as a positive differentiator when work is otherwise
+comparable.
+
+================================================================================
+SUBMISSION
+================================================================================
+
+Submit:
+  - The URL of your GitHub repository (or repositories, if frontend and
+    backend are split), with dev, stage, and prod branches present and
+    their pipeline history intact and inspectable.
+  - Any manifests, pipeline definitions, Dockerfiles, and Argo CD
+    configuration you produced, committed to the repository (not sent as
+    separate files).
+  - A short written note (one page is sufficient) explaining the decisions
+    you made wherever the brief left room for judgment, and why.
+
+================================================================================
+EVALUATION NOTES
+================================================================================
+
+You will be assessed on whether the system behaves as specified end-to-end (a
+real change can be observed moving through dev -> stage -> prod under the
+stated trigger rules) as much as on the presence of individual files. Partial,
+well-reasoned implementations will be marked more favorably than
+complete-looking configurations that do not actually function when exercised.

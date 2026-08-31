@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: chat-frontend
+  namespace: support-chat-dev
+
+  labels:
+    app: chat-frontend
+    environment: dev
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: chat-frontend
+
+  template:
+    metadata:
+      labels:
+        app: chat-frontend
+        environment: dev
+
+    spec:
+
+      containers:
+
+        - name: frontend
+
+          image: ghcr.io/taziim/support-chat-frontend:dev-initial
+
+          ports:
+            - containerPort: 80
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+
+            initialDelaySeconds: 10
+            periodSeconds: 20

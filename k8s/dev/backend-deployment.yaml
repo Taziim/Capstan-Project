@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-backend
+  namespace: support-chat-dev
+  labels:
+    app: chat-backend
+    environment: dev
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: chat-backend
+
+  template:
+    metadata:
+      labels:
+        app: chat-backend
+        environment: dev
+
+    spec:
+      containers:
+
+        - name: backend
+
+          image: ghcr.io/taziim/support-chat-backend:dev-initial
+
+          ports:
+            - containerPort: 5000
+
+          env:
+            - name: PORT
+              value: "5000"
+
+            - name: NODE_ENV
+              value: "development"
+
+            - name: CLIENT_URL
+              value: "http://chat-frontend" # http://localhost
+
+            - name: CHAT_PRIMARY_COLOR
+              value: "#2563EB"
+
+            - name: CHAT_SECONDARY_COLOR
+              value: "#EFF6FF"
+
+            - name: CHAT_USER_MESSAGE_COLOR
+              value: "#2563EB"
+
+            - name: CHAT_AGENT_MESSAGE_COLOR
+              value: "#F3F4F6"
+
+            - name: CHAT_TEXT_COLOR
+              value: "#111827"
+
+            - name: CHAT_BACKGROUND_COLOR
+              value: "#FFFFFF"
+
+            - name: CHAT_HEADER_COLOR
+              value: "#2563EB"
+
+            - name: CHAT_HEADER_TEXT_COLOR
+              value: "#FFFFFF"
+
+            - name: CHAT_INPUT_BACKGROUND_COLOR
+              value: "#FFFFFF"
+
+            - name: CHAT_BORDER_RADIUS
+              value: "12px"
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 20
