@@ -35,10 +35,11 @@ jobs:
         id: vars
         run: |
           SHA=$(git rev-parse --short HEAD)
+          OWNER=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
 
           echo "SHA=$SHA" >> "$GITHUB_OUTPUT"
           echo "TAG=dev-$SHA" >> "$GITHUB_OUTPUT"
-          echo "OWNER=${GITHUB_REPOSITORY_OWNER}" >> "$GITHUB_OUTPUT"
+          echo "OWNER=$OWNER" >> "$GITHUB_OUTPUT"
 
       - name: Build frontend
         run: |
@@ -46,29 +47,29 @@ jobs:
             -f frontend/Dockerfile.prod \
             --build-arg VITE_API_URL="${{ vars.DEV_API_URL }}" \
             --build-arg VITE_SOCKET_URL="${{ vars.DEV_SOCKET_URL }}" \
-            -t ghcr.io/${{ github.repository_owner }}/support-chat-frontend:${{ steps.vars.outputs.TAG }} \
+            -t ghcr.io/${{ steps.vars.outputs.OWNER }}/support-chat-frontend:${{ steps.vars.outputs.TAG }} \
             frontend
 
       - name: Build backend
         run: |
           docker build \
             -f backend/Dockerfile.prod \
-            -t ghcr.io/${{ github.repository_owner }}/support-chat-backend:${{ steps.vars.outputs.TAG }} \
+            -t ghcr.io/${{ steps.vars.outputs.OWNER }}/support-chat-backend:${{ steps.vars.outputs.TAG }} \
             backend
 
       - name: Push images
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/support-chat-frontend:${{ steps.vars.outputs.TAG }}
-          docker push ghcr.io/${{ github.repository_owner }}/support-chat-backend:${{ steps.vars.outputs.TAG }}
+          docker push ghcr.io/${{ steps.vars.outputs.OWNER }}/support-chat-frontend:${{ steps.vars.outputs.TAG }}
+          docker push ghcr.io/${{ steps.vars.outputs.OWNER }}/support-chat-backend:${{ steps.vars.outputs.TAG }}
 
       - name: Update Kubernetes manifests
         run: |
           sed -i \
-            "s|image: ghcr.io/.*/support-chat-frontend:.*|image: ghcr.io/${{ github.repository_owner }}/support-chat-frontend:${{ steps.vars.outputs.TAG }}|" \
+            "s|image: ghcr.io/.*/support-chat-frontend:.*|image: ghcr.io/${{ steps.vars.outputs.OWNER }}/support-chat-frontend:${{ steps.vars.outputs.TAG }}|" \
             k8s/dev/frontend-deployment.yaml
 
           sed -i \
-            "s|image: ghcr.io/.*/support-chat-backend:.*|image: ghcr.io/${{ github.repository_owner }}/support-chat-backend:${{ steps.vars.outputs.TAG }}|" \
+            "s|image: ghcr.io/.*/support-chat-backend:.*|image: ghcr.io/${{ steps.vars.outputs.OWNER }}/support-chat-backend:${{ steps.vars.outputs.TAG }}|" \
             k8s/dev/backend-deployment.yaml
 
       - name: Commit GitOps change
