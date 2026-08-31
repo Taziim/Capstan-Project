@@ -1,0 +1,102 @@
+name: Deploy Production
+
+on:
+  pull_request:
+    branches:
+      - prod
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: read
+
+jobs:
+
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Frontend install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Frontend lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Frontend build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Backend install
+        working-directory: backend
+        run: npm ci
+
+      - name: Backend build
+        working-directory: backend
+        run: npm run build
+
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    steps:
+
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate immutable version
+        id: version
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+
+          echo "TAG=prod-$SHA" >> "$GITHUB_OUTPUT"
+          echo "SHA=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Build frontend
+        run: |
+          docker build \
+            -f frontend/Dockerfile.prod \
+            --build-arg VITE_API_URL="${{ vars.PROD_API_URL }}" \
+            --build-arg VITE_SOCKET_URL="${{ vars.PROD_SOCKET_URL }}" \
+            -t ghcr.io/${{ github.repository_owner }}/support-chat-frontend:${{ steps.version.outputs.TAG }} \
+            frontend
+
+      - name: Build backend
+        run: |
+          docker build \
+            -f backend/Dockerfile.prod \
+            -t ghcr.io/${{ github.repository_owner }}/support-chat-backend:${{ steps.version.outputs.TAG }} \
+            backend
+
+      - name: Push images
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/support-chat-frontend:${{ steps.version.outputs.TAG }}
+          docker push ghcr.io/${{ github.repository_owner }}/support-chat-backend:${{ steps.version.outputs.TAG }}
