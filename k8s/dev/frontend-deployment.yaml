@@ -28,7 +28,7 @@ spec:
 
         - name: frontend
 
-          image: ghcr.io/taziim/support-chat-frontend:dev-initial
+          image: ghcr.io/taziim/support-chat-frontend:dev-d70113d
 
           ports:
             - containerPort: 80
