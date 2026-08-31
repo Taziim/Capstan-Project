@@ -25,7 +25,7 @@ spec:
 
         - name: backend
 
-          image: ghcr.io/taziim/support-chat-backend:stage-initial
+          image: ghcr.io/taziim/support-chat-backend:stage-9704218
 
           ports:
             - containerPort: 5000
