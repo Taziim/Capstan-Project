@@ -10,7 +10,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/YOUR_USERNAME/support-chat-platform.git
+    repoURL: https://github.com/taziim/support-chat-platform.git
 
     targetRevision: dev
 
